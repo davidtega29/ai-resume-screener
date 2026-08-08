@@ -1,0 +1,321 @@
+{
+  "name": "RESUME SCREENER V2",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "43f2962f-3e5a-449c-a784-bc52380306ad",
+      "name": "When clicking ‘Execute workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "03cfbf3b-f53b-405b-8378-5d5a35c03068",
+              "name": "Resume",
+              "value": "Candidate Name: Sarah Johnson  Applying For: Frontend Developer  Experience: - 4 years React - 3 years TypeScript - Built 10 production web applications - Node.js - REST APIs  Education: B.Sc Computer Science  Skills: React JavaScript TypeScript Node.js Git  Communication: Excellent written and verbal communication. Led a team of five developers.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "96f76f9f-f94f-4b90-8330-5b5ee4e30fbd",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.Resume }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an expert HR recruiter.\n\nAnalyze the resume provided by the user.\n\nScore the candidate from 0-100 based on:\n- Skills match\n- Years of experience\n- Education\n- Communication\n- Overall fit\n\nReturn:\n- candidate_name\n- job_title\n- overall_score\n- decision\n- summary\n- strengths\n- weaknesses\n- recommendation\n\nAlways follow the connected Structured Output Parser schema exactly."
+        }
+      },
+      "id": "51afa693-927f-4315-82f6-e87f3a5896b6",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        400,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "896a10b2-c987-4492-a15c-6e4c5da74113",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        400,
+        336
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "dMmLPPI0wwChhw32",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"candidate_name\": \"John Doe\",\n  \"job_title\": \"Frontend Developer\",\n  \"overall_score\": 86,\n  \"decision\": \"Interview\",\n  \"summary\": \"Strong frontend candidate.\",\n  \"strengths\": [\n    \"React\",\n    \"TypeScript\"\n  ],\n  \"weaknesses\": [\n    \"Limited cloud experience\"\n  ],\n  \"recommendation\": \"Proceed to interview.\"\n}"
+      },
+      "id": "932ef14e-f9e9-4155-b8e2-119d57b589f4",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        544,
+        336
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output.overall_score\n}}",
+                    "rightValue": 90,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gt"
+                    },
+                    "id": "d68146e5-1e42-43ca-8822-80eb812d11fe"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        704,
+        112
+      ],
+      "id": "741cbfa3-9ccc-4568-83db-a2d3ce3356de",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5ed3f54b-3391-4aa2-aa15-4a1e4ee0c6a1",
+              "name": "status",
+              "value": "PASS",
+              "type": "string"
+            },
+            {
+              "id": "235503ea-0ba1-456f-addd-456d1b428bde",
+              "name": "candidate_name",
+              "value": "={{ $json.output.candidate_name }}",
+              "type": "string"
+            },
+            {
+              "id": "430b4d0b-09a4-4209-ac39-5b7df08184e8",
+              "name": "overall_score",
+              "value": "={{ $json.output.overall_score }}",
+              "type": "string"
+            },
+            {
+              "id": "10a958fc-62d7-4570-af2a-fe6de7b471dd",
+              "name": "decision",
+              "value": "={{ $json.output.decision }}",
+              "type": "string"
+            },
+            {
+              "id": "efbcd0ff-db34-4404-8030-0ca1634508a8",
+              "name": "summary",
+              "value": "={{ $json.output.summary }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        912,
+        32
+      ],
+      "id": "0ad998bf-772a-450f-a430-506ae2253d6c",
+      "name": "PASS - Strong Candidate"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "202659c8-376e-4ed5-ae12-7f27f85dd182",
+              "name": "status",
+              "value": "REJECT",
+              "type": "string"
+            },
+            {
+              "id": "f0750e08-c92d-4f0b-9392-ff6c85142c1a",
+              "name": "candidate_name",
+              "value": "={{ $json.output.candidate_name }}",
+              "type": "string"
+            },
+            {
+              "id": "3f8163bc-21ec-4e59-b85e-578224f474e6",
+              "name": "job_title",
+              "value": "={{ $json.output.job_title }}",
+              "type": "string"
+            },
+            {
+              "id": "bf1c2302-1220-440d-98ca-3345acfb497c",
+              "name": "overall_score",
+              "value": "={{ $json.output.overall_score }}",
+              "type": "string"
+            },
+            {
+              "id": "3b58fbd3-86bb-45a6-8dcf-a60b2e3f8db8",
+              "name": "summary",
+              "value": "={{ $json.output.summary }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        912,
+        192
+      ],
+      "id": "d78a16b6-28cf-4507-926b-719533eef6de",
+      "name": "REJECT - Weak Candidate"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "PASS - Strong Candidate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "REJECT - Weak Candidate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "c0517090-12a8-474e-a4ce-1e8666ecb299",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "332d4b44ba312fdf1009fc054502149ebbfe1ec5b82fc23572c3eb179cd63d12"
+  },
+  "nodeGroups": [],
+  "id": "kA2e8VuDZk5OOUMb",
+  "tags": []
+}

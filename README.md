@@ -52,3 +52,7 @@ This project demonstrates how AI and workflow automation can be used to streamli
 ## Project Status
 
 Prototype / learning project.
+
+## Workflow Screenshot
+
+![AI Resume Screener Workflow](workflow.png)
